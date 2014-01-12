@@ -1,3 +1,4 @@
+fg
 # Define: tomcat::instance
 #
 define tomcat::instance (
@@ -12,6 +13,7 @@ define tomcat::instance (
   $group                        = '',
 
   $magicword                    = 'SHUTDOWN',
+  $disable                      = '',
 
   $runtime_dir                  = '',
 
@@ -117,6 +119,11 @@ define tomcat::instance (
     ''      => "/usr/bin/tomcat-instance-create -p ${http_port} -c ${control_port} ${real_ajp_port} -w ${magicword} -o ${instance_owner} -g ${instance_group} ${real_runtime_dir} ${instance_path}",
     default => $create_instance_cmd_exec,
   }
+  
+  $manage_service_ensure = $tomcat::bool_disable ? {
+    true    => 'stopped',
+    default => 'running',
+  }
 
   if (!defined(File['/usr/bin/tomcat-instance-create'])) {
     file { '/usr/bin/tomcat-instance-create':
@@ -158,7 +165,7 @@ define tomcat::instance (
 
   # Running service
   service { "tomcat-${instance_name}":
-    ensure     => running,
+    ensure     => $manage_service_ensure,
     name       => "${tomcat::params::pkgver}-${instance_name}",
     enable     => true,
     pattern    => $instance_name,
