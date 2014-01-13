@@ -1,4 +1,3 @@
-fg
 # Define: tomcat::instance
 #
 define tomcat::instance (
